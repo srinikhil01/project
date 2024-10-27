@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Upload and Retrieval</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Login Form -->
+    <div class="login">
+        <h1 style="color: white;">Login</h1>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+    </div>
+
+    <!-- Welcome Page with Link and Back Button -->
+    <div class="container" id="button-container">
+        <h2>Welcome!</h2>
+        <div class="buttons">
+            <button id="linkButton" style="display: none;" onclick="showLinkPage()">Link Modules</button>
+            <button onclick="showUploadForm()">Upload Files</button>
+            <button onclick="showRetrieveForm()">Retrieve Files</button>
+            <button class="back-button" onclick="showLoginPage()">Back to Login</button>
+        </div>
+    </div>
+
+    <!-- Main QR Code Input Section (Initially Hidden) -->
+    <div class="container" id="qrCodeInputContainer" style="display: none;">
+        <h3>Enter Main System QR Code</h3>
+        <input type="text" id="mainQrCodeInput" placeholder="Enter Main System QR Code" required>
+        <button onclick="displayLinkedSubmodules()">Submit</button> <!-- Submit to fetch submodules -->
+        <button class="back-button" onclick="hideQrCodeInput()">Cancel</button>
+    </div>
+
+    <!-- Link Modules Page -->
+    <div class="container" id="link-page" style="display: none;">
+        <h2>Link Modules to Subsystem</h2>
+        <label for="subsystem-qr" style="font-size: large;">Subsystem QR Code:</label>
+        <input type="text" id="mainQrCode" placeholder="Main System QR Code" maxlength="50" pattern="[A-Za-z0-9]+" required>
+        <button onclick="showModulePage()">Link Modules</button>
+        <button onclick="showQrCodeInput()">Display Modules</button> <!-- Display data -->
+        <button class="back-button" onclick="goBackToWelcome()">Back to Welcome</button>
+    </div>
+
+    <!-- Subsystem Modules Page (Editable) -->
+    <div class="container1" id="subsystem-page" style="display: none;">
+        <h2>Subsystem Modules</h2>
+        <label for="displayMainQrCode"><B>Main System QR Code:</B></label>
+
+        <span>
+            <input type="text" id="displayMainQrCode" readonly> <!-- Read-only Main QR Code field -->
+        </span>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Submodule Name</th>
+                    <th>Subsystem QR Code</th>
+                    <th>Upload File</th> <!-- Added column for file upload -->
+                    <th>Remarks</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody id="subsystemTableBody">
+                <!-- Dynamic rows will be generated here -->
+            </tbody>
+        </table>
+        <button class="back-button" onclick="goBackToLink()">Back</button>
+    </div>
+
+    <!-- Subsystem Modules Page (Read-Only) -->
+    <div class="container1" id="subsystem-display-page" style="display: none;">
+        <h2>Linked Subsystem Modules</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Submodule Name</th>
+                    <th>Subsystem QR Code</th>
+                    <th>Uploaded File</th> <!-- Added column to display file link -->
+                    <th>Remarks</th>
+                    <th>Link Status</th>
+                    <th>Saved Date/Time</th>
+                </tr>
+            </thead>
+            <tbody id="subsystemDisplayTableBody">
+                <!-- Dynamic rows will be generated here -->
+            </tbody>
+        </table>
+        <button style="width: 80px" class="back-button" onclick="goBackToLink()">Back</button>
+    </div>
+
+    <!-- Upload Form (Initially hidden) -->
+    <div class="container2" id="upload-form">
+        <h2>Upload Data into Server</h2>
+        <form action="newupload.php" method="POST" enctype="multipart/form-data">
+            <div>
+                <label for="qr-scan">QR/Barcode Scan (Manual Entry or Scan):</label>
+                <input type="text" id="qr-scan" name="qr-scan" placeholder="Scan QR code or enter manually" maxlength="50" pattern="[A-Za-z0-9]+" required>
+            </div>
+
+            <label for="test-stage">Test Stage:</label>
+            <select id="test-stage" name="test-stage">
+                <option value="initial">Initial Testing</option>
+                <option value="preet-rv1">PREET RV1</option>
+                <option value="poet-rv2">POET RV2</option>
+                <option value="customer-offering">Customer Offering</option>
+            </select>
+
+            <label for="tmr">Upload TMR:</label>
+            <input type="file" id="tmr" name="tmr" accept=".doc, .pdf, .png, .jpg" class="file-input" multiple>
+
+            <label for="problem-faced">Problem Faced:</label>
+            <textarea id="problem-faced" name="problem-faced"></textarea>
+
+            <label for="solution">Solution:</label>
+            <textarea id="solution" name="solution"></textarea>
+
+            <label for="remarks">Remarks:</label>
+            <textarea id="remarks" name="remarks"></textarea>
+
+            <input type="hidden" id="timestamp" name="timestamp">
+            <button type="submit">Upload</button>
+            <button type="button" class="back-button" onclick="goBack()">Back</button>
+        </form>
+    </div>
+	
+<!-- Retrieval Form -->
+<div class="container" id="retrieve-form">
+    <h2>Retrieve Data from Server</h2>
+    <form onsubmit="event.preventDefault(); displayRetrievedData(); ">
+        <label for="retrieve-qrcode">QR Code Scan:</label>
+        <input type="text" id="retrieve-qrcode" name="retrieve-qrcode" placeholder="Scan QR code here" maxlength="20" required>
+        <button type="submit">Retrieve</button>
+		<button  type="button" class="back-button" onclick="goBack()">Back</button>
+    </form>
+</div>
+
+<!-- Retrieved Data Display Section -->
+<div class="container1" id="retrieved-data-display" style="display: none;">
+    <h3>Retrieved Data</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Test Stage</th>
+                <th>Problem Faced</th>
+                <th>Solution</th>
+                <th>Remarks</th>
+                <th>File</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody id="retrievedDataTableBody">
+            <!-- Dynamically generated rows will be inserted here -->
+        </tbody>
+    </table>
+    <button type="button" class="back-button" onclick="goBack()">Back</button>
+</div>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
